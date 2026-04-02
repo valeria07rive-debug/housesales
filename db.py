@@ -3,6 +3,8 @@ import sqlite3
 def connect():
     return sqlite3.connect("real_estate.db")
 
+
+
 def add_property(title, address, ptype, price, status, desc):
     conn = connect()
     cursor = conn.cursor()
@@ -27,6 +29,8 @@ def get_properties():
     return data
 
 
+
+
 def add_client(name, phone, email):
     conn = connect()
     cursor = conn.cursor()
@@ -45,16 +49,25 @@ def get_clients():
     cursor = conn.cursor()
 
     cursor.execute("SELECT * FROM clients")
-    return cursor.fetchall()
+    data = cursor.fetchall()
+
+    conn.close()
+    return data
+
 
 
 def create_transaction(property_id, client_id, ttype, amount, date):
     conn = connect()
     cursor = conn.cursor()
 
-
+    
     cursor.execute("SELECT status FROM properties WHERE id=?", (property_id,))
-    status = cursor.fetchone()[0]
+    result = cursor.fetchone()
+
+    if not result:
+        raise Exception("Propiedad no existe")
+
+    status = result[0]
 
     if status in ["sold", "rented"]:
         raise Exception("Propiedad no disponible")
@@ -63,7 +76,6 @@ def create_transaction(property_id, client_id, ttype, amount, date):
     INSERT INTO transactions (property_id, client_id, transaction_type, amount, transaction_date)
     VALUES (?, ?, ?, ?, ?)
     """, (property_id, client_id, ttype, amount, date))
-
 
     if ttype == "sale":
         cursor.execute("UPDATE properties SET status='sold' WHERE id=?", (property_id,))
