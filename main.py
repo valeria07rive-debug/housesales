@@ -48,3 +48,31 @@ def show_properties():
 
 tk.Button(root, text="Show Properties", command=show_properties).pack()
 
+tk.Label(root, text="--- ADD CLIENT ---").pack()
+
+name = tk.Entry(root)
+name.pack()
+
+phone = tk.Entry(root)
+phone.pack()
+
+email = tk.Entry(root)
+email.pack()
+
+
+def save_client():
+    add_client(name.get(), phone.get(), email.get())
+    print("Client added 😎")
+
+
+tk.Button(root, text="Add Client", command=save_client).pack()
+
+
+def show_clients():
+    print("CLIENTS:")
+    print(get_clients())
+
+
+tk.Button(root, text="Show Clients", command=show_clients).pack()
+
+root.mainloop()
