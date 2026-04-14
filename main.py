@@ -1,78 +1,59 @@
-import tkinter as tk
+import flet as ft
 from db import add_property, get_properties, add_client, get_clients
 
-root = tk.Tk()
-root.title("Real Estate")
-root.geometry("400x500")
-
-tk.Label(root, text="--- ADD PROPERTY ---").pack()
-
-title = tk.Entry(root)
-title.pack()
-
-address = tk.Entry(root)
-address.pack()
-
-ptype = tk.Entry(root)
-ptype.pack()
-
-price = tk.Entry(root)
-price.pack()
-
-status = tk.Entry(root)
-status.pack()
-
-desc = tk.Entry(root)
-desc.pack()
+def main(page: ft.Page):
+    page.title = "Real Estate"
+    page.scroll = "auto"
 
 
-def save_property():
-    add_property(
-        title.get(),
-        address.get(),
-        ptype.get(),
-        float(price.get()),
-        status.get(),
-        desc.get()
+    title = ft.TextField(label="Title")
+    address = ft.TextField(label="Address")
+    ptype = ft.TextField(label="Type")
+    price = ft.TextField(label="Price")
+    status = ft.TextField(label="Status")
+    desc = ft.TextField(label="Description")
+
+    def save_property(e):
+        add_property(
+            title.value,
+            address.value,
+            ptype.value,
+            float(price.value),
+            status.value,
+            desc.value
+        )
+        page.add(ft.Text("Property added 😎"))
+
+    def show_properties(e):
+        props = get_properties()
+        page.add(ft.Text(f"PROPERTIES:\n{props}"))
+
+   
+    name = ft.TextField(label="Name")
+    phone = ft.TextField(label="Phone")
+    email = ft.TextField(label="Email")
+
+    def save_client(e):
+        add_client(name.value, phone.value, email.value)
+        page.add(ft.Text("Client added 😎"))
+
+    def show_clients(e):
+        clients = get_clients()
+        page.add(ft.Text(f"CLIENTS:\n{clients}"))
+
+   
+    page.add(
+        ft.Text("--- ADD PROPERTY ---"),
+        title, address, ptype, price, status, desc,
+        ft.ElevatedButton("Add Property", on_click=save_property),
+        ft.ElevatedButton("Show Properties", on_click=show_properties),
+
+        ft.Divider(),
+
+        ft.Text("--- ADD CLIENT ---"),
+        name, phone, email,
+        ft.ElevatedButton("Add Client", on_click=save_client),
+        ft.ElevatedButton("Show Clients", on_click=show_clients),
     )
-    print("Property added 😎")
 
-
-tk.Button(root, text="Add Property", command=save_property).pack()
-
-
-def show_properties():
-    print("PROPERTIES:")
-    print(get_properties())
-
-
-tk.Button(root, text="Show Properties", command=show_properties).pack()
-
-tk.Label(root, text="--- ADD CLIENT ---").pack()
-
-name = tk.Entry(root)
-name.pack()
-
-phone = tk.Entry(root)
-phone.pack()
-
-email = tk.Entry(root)
-email.pack()
-
-
-def save_client():
-    add_client(name.get(), phone.get(), email.get())
-    print("Client added 😎")
-
-
-tk.Button(root, text="Add Client", command=save_client).pack()
-
-
-def show_clients():
-    print("CLIENTS:")
-    print(get_clients())
-
-
-tk.Button(root, text="Show Clients", command=show_clients).pack()
-
-root.mainloop()
+ft.app(target=main)
