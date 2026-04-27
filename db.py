@@ -1,7 +1,7 @@
 import sqlite3
 
 def connect():
-    return sqlite3.connect("real_estate.db")
+    return sqlite3.connect("real_estate.sqbpro")
 
 
 
