@@ -84,3 +84,53 @@ def create_transaction(property_id, client_id, ttype, amount, date):
 
     conn.commit()
     conn.close()
+    def get_available_properties():
+    conn = connect()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM available_properties")
+    data = cursor.fetchall()
+
+    conn.close()
+    return data
+
+
+def get_dashboard_stats():
+    conn = connect()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT COUNT(*) FROM properties")
+    total_properties = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM properties WHERE status='available'")
+    available = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM properties WHERE status='sold'")
+    sold = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM properties WHERE status='rented'")
+    rented = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM clients")
+    total_clients = cursor.fetchone()[0]
+
+    conn.close()
+
+    return {
+        "total_properties": total_properties,
+        "available": available,
+        "sold": sold,
+        "rented": rented,
+        "clients": total_clients
+    }
+
+
+def get_transactions():
+    conn = connect()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM transactions")
+    data = cursor.fetchall()
+
+    conn.close()
+    return data
