@@ -17,7 +17,7 @@ def main(page: ft.Page):
 
     output = ft.Text("")
 
-   
+    
     title = ft.TextField(label="Title")
     address = ft.TextField(label="Address")
     ptype = ft.TextField(label="Type")
@@ -73,7 +73,6 @@ def main(page: ft.Page):
             output.value = f"PROPERTIES:\n{props}"
         except Exception as err:
             output.value = f"❌ Error: {err}"
-
         page.update()
 
    
@@ -107,10 +106,9 @@ def main(page: ft.Page):
             output.value = f"CLIENTS:\n{clients}"
         except Exception as err:
             output.value = f"❌ Error: {err}"
-
         page.update()
 
-  
+    
     property_id = ft.TextField(label="Property ID")
     client_id = ft.TextField(label="Client ID")
     amount = ft.TextField(label="Amount")
@@ -147,17 +145,15 @@ def main(page: ft.Page):
             output.value = f"TRANSACTIONS:\n{transactions}"
         except Exception as err:
             output.value = f"❌ Error: {err}"
-
         page.update()
 
-   
+    
     def show_available_report(e):
         try:
             props = get_available_properties()
             output.value = f"AVAILABLE PROPERTIES:\n{props}"
         except Exception as err:
             output.value = f"❌ Error: {err}"
-
         page.update()
 
     def show_dashboard(e):
@@ -178,38 +174,47 @@ def main(page: ft.Page):
         page.update()
 
     
+    tabs = ft.Tabs(
+        selected_index=0,
+        tabs=[
+            ft.Tab(
+                text=("Properties"),
+                content=ft.Column([
+                    title, address, ptype, price, status, desc,
+                    ft.ElevatedButton("Add Property", on_click=save_property),
+                    ft.ElevatedButton("Show Properties", on_click=show_properties),
+                ])
+            ),
+            ft.Tab(
+                text=("Clients"),
+                content=ft.Column([
+                    name, phone, email,
+                    ft.ElevatedButton("Add Client", on_click=save_client),
+                    ft.ElevatedButton("Show Clients", on_click=show_clients),
+                ])
+            ),
+            ft.Tab(
+                text=("Transactions"),
+                content=ft.Column([
+                    property_id, client_id, transaction_type, amount, date,
+                    ft.ElevatedButton("Create Transaction", on_click=save_transaction),
+                    ft.ElevatedButton("Show Transactions", on_click=show_transactions),
+                ])
+            ),
+            ft.Tab(
+                text=("Reports"),
+                content=ft.Column([
+                    ft.ElevatedButton("Show Dashboard", on_click=show_dashboard),
+                    ft.ElevatedButton("Available Properties", on_click=show_available_report),
+                ])
+            ),
+        ]
+    )
+
     page.add(
-        ft.Text("🏠 REAL ESTATE SYSTEM", size=20, weight="bold"),
-
+        ft.Text("🏠 REAL ESTATE SYSTEM", size=22, weight="bold"),
+        tabs,
         ft.Divider(),
-
-        ft.Text("--- ADD PROPERTY ---"),
-        title, address, ptype, price, status, desc,
-        ft.ElevatedButton("Add Property", on_click=save_property),
-        ft.ElevatedButton("Show Properties", on_click=show_properties),
-
-        ft.Divider(),
-
-        ft.Text("--- ADD CLIENT ---"),
-        name, phone, email,
-        ft.ElevatedButton("Add Client", on_click=save_client),
-        ft.ElevatedButton("Show Clients", on_click=show_clients),
-
-        ft.Divider(),
-
-        ft.Text("--- TRANSACTIONS ---"),
-        property_id, client_id, transaction_type, amount, date,
-        ft.ElevatedButton("Create Transaction", on_click=save_transaction),
-        ft.ElevatedButton("Show Transactions", on_click=show_transactions),
-
-        ft.Divider(),
-
-        ft.Text("--- DASHBOARD / REPORTS ---"),
-        ft.ElevatedButton("Show Dashboard", on_click=show_dashboard),
-        ft.ElevatedButton("Available Properties Report", on_click=show_available_report),
-
-        ft.Divider(),
-
         ft.Text("OUTPUT:"),
         output
     )

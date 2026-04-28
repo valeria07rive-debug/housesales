@@ -1,5 +1,6 @@
 import sqlite3
 
+
 def connect():
     return sqlite3.connect("real_estate.db")
 
@@ -27,7 +28,6 @@ def get_properties():
 
     conn.close()
     return data
-
 
 
 
@@ -60,23 +60,28 @@ def create_transaction(property_id, client_id, ttype, amount, date):
     conn = connect()
     cursor = conn.cursor()
 
-    
+    # Verificar si la propiedad existe
     cursor.execute("SELECT status FROM properties WHERE id=?", (property_id,))
     result = cursor.fetchone()
 
     if not result:
-        raise Exception("Propiedad no existe")
+        conn.close()
+        raise Exception("❌ Property does not exist")
 
     status = result[0]
 
+    
     if status in ["sold", "rented"]:
-        raise Exception("Propiedad no disponible")
+        conn.close()
+        raise Exception("❌ Property not available")
 
+    
     cursor.execute("""
     INSERT INTO transactions (property_id, client_id, transaction_type, amount, transaction_date)
     VALUES (?, ?, ?, ?, ?)
     """, (property_id, client_id, ttype, amount, date))
 
+    
     if ttype == "sale":
         cursor.execute("UPDATE properties SET status='sold' WHERE id=?", (property_id,))
     else:
@@ -84,15 +89,56 @@ def create_transaction(property_id, client_id, ttype, amount, date):
 
     conn.commit()
     conn.close()
-   
-    def get_available_properties():
-     conn = connect()
-     cursor = conn.cursor()
 
-     cursor.execute("SELECT * FROM available_properties")
-     data = cursor.fetchall()
 
-     conn.close()
-     return data
-   
-   
+def get_transactions():
+    conn = connect()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM transactions")
+    data = cursor.fetchall()
+
+    conn.close()
+    return data
+
+
+
+def get_available_properties():
+    conn = connect()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM available_properties")
+    data = cursor.fetchall()
+
+    conn.close()
+    return data
+
+
+def get_dashboard_stats():
+    conn = connect()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT COUNT(*) FROM properties")
+    total_properties = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM properties WHERE status='available'")
+    available = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM properties WHERE status='sold'")
+    sold = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM properties WHERE status='rented'")
+    rented = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM clients")
+    clients = cursor.fetchone()[0]
+
+    conn.close()
+
+    return {
+        "total_properties": total_properties,
+        "available": available,
+        "sold": sold,
+        "rented": rented,
+        "clients": clients
+    }
