@@ -1,5 +1,14 @@
 import flet as ft
-from db import add_property, get_properties, add_client, get_clients
+from db import (
+    add_property,
+    get_properties,
+    add_client,
+    get_clients,
+    create_transaction,
+    get_available_properties,
+    get_dashboard_stats,
+    get_transactions
+)
 
 
 def main(page: ft.Page):
@@ -8,11 +17,10 @@ def main(page: ft.Page):
 
     output = ft.Text("")
 
-    
+   
     title = ft.TextField(label="Title")
     address = ft.TextField(label="Address")
     ptype = ft.TextField(label="Type")
-
     price = ft.TextField(label="Price")
 
     status = ft.Dropdown(
@@ -29,7 +37,6 @@ def main(page: ft.Page):
 
     def save_property(e):
         try:
-            # VALIDAR PRECIO
             price_value = float(price.value)
 
             if not title.value or not address.value:
@@ -52,32 +59,30 @@ def main(page: ft.Page):
             )
 
             output.value = "✅ Property added"
-            page.update()
 
         except ValueError:
             output.value = "❌ Price must be a number"
-            page.update()
         except Exception as err:
             output.value = f"❌ Error: {err}"
-            page.update()
+
+        page.update()
 
     def show_properties(e):
         try:
             props = get_properties()
             output.value = f"PROPERTIES:\n{props}"
-            page.update()
         except Exception as err:
             output.value = f"❌ Error: {err}"
-            page.update()
 
-    
+        page.update()
+
+   
     name = ft.TextField(label="Name")
     phone = ft.TextField(label="Phone")
     email = ft.TextField(label="Email")
 
     def save_client(e):
         try:
-            
             if not phone.value.isdigit():
                 output.value = "❌ Phone must contain only numbers"
                 page.update()
@@ -89,22 +94,88 @@ def main(page: ft.Page):
                 return
 
             add_client(name.value, phone.value, email.value)
-
             output.value = "✅ Client added"
-            page.update()
 
         except Exception as err:
             output.value = f"❌ Error: {err}"
-            page.update()
+
+        page.update()
 
     def show_clients(e):
         try:
             clients = get_clients()
             output.value = f"CLIENTS:\n{clients}"
-            page.update()
         except Exception as err:
             output.value = f"❌ Error: {err}"
-            page.update()
+
+        page.update()
+
+  
+    property_id = ft.TextField(label="Property ID")
+    client_id = ft.TextField(label="Client ID")
+    amount = ft.TextField(label="Amount")
+    date = ft.TextField(label="Date (YYYY-MM-DD)")
+
+    transaction_type = ft.Dropdown(
+        label="Transaction Type",
+        options=[
+            ft.dropdown.Option("sale"),
+            ft.dropdown.Option("rent")
+        ]
+    )
+
+    def save_transaction(e):
+        try:
+            create_transaction(
+                int(property_id.value),
+                int(client_id.value),
+                transaction_type.value,
+                float(amount.value),
+                date.value
+            )
+
+            output.value = "✅ Transaction completed"
+
+        except Exception as err:
+            output.value = f"❌ Error: {err}"
+
+        page.update()
+
+    def show_transactions(e):
+        try:
+            transactions = get_transactions()
+            output.value = f"TRANSACTIONS:\n{transactions}"
+        except Exception as err:
+            output.value = f"❌ Error: {err}"
+
+        page.update()
+
+   
+    def show_available_report(e):
+        try:
+            props = get_available_properties()
+            output.value = f"AVAILABLE PROPERTIES:\n{props}"
+        except Exception as err:
+            output.value = f"❌ Error: {err}"
+
+        page.update()
+
+    def show_dashboard(e):
+        try:
+            stats = get_dashboard_stats()
+
+            output.value = (
+                f"📊 DASHBOARD\n"
+                f"Total Properties: {stats['total_properties']}\n"
+                f"Available: {stats['available']}\n"
+                f"Sold: {stats['sold']}\n"
+                f"Rented: {stats['rented']}\n"
+                f"Clients: {stats['clients']}"
+            )
+        except Exception as err:
+            output.value = f"❌ Error: {err}"
+
+        page.update()
 
     
     page.add(
@@ -113,23 +184,29 @@ def main(page: ft.Page):
         ft.Divider(),
 
         ft.Text("--- ADD PROPERTY ---"),
-        title,
-        address,
-        ptype,
-        price,
-        status,
-        desc,
+        title, address, ptype, price, status, desc,
         ft.ElevatedButton("Add Property", on_click=save_property),
         ft.ElevatedButton("Show Properties", on_click=show_properties),
 
         ft.Divider(),
 
         ft.Text("--- ADD CLIENT ---"),
-        name,
-        phone,
-        email,
+        name, phone, email,
         ft.ElevatedButton("Add Client", on_click=save_client),
         ft.ElevatedButton("Show Clients", on_click=show_clients),
+
+        ft.Divider(),
+
+        ft.Text("--- TRANSACTIONS ---"),
+        property_id, client_id, transaction_type, amount, date,
+        ft.ElevatedButton("Create Transaction", on_click=save_transaction),
+        ft.ElevatedButton("Show Transactions", on_click=show_transactions),
+
+        ft.Divider(),
+
+        ft.Text("--- DASHBOARD / REPORTS ---"),
+        ft.ElevatedButton("Show Dashboard", on_click=show_dashboard),
+        ft.ElevatedButton("Available Properties Report", on_click=show_available_report),
 
         ft.Divider(),
 
@@ -139,5 +216,3 @@ def main(page: ft.Page):
 
 
 ft.app(target=main)
-
-
