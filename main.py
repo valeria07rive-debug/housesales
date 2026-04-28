@@ -15,13 +15,16 @@ def main(page: ft.Page):
     page.title = "Real Estate System"
     page.scroll = "auto"
 
+
     output = ft.Text("")
 
-    
+
+    # -------- PROPERTIES --------
     title = ft.TextField(label="Title")
     address = ft.TextField(label="Address")
     ptype = ft.TextField(label="Type")
     price = ft.TextField(label="Price")
+
 
     status = ft.Dropdown(
         label="Status",
@@ -33,21 +36,26 @@ def main(page: ft.Page):
         ]
     )
 
+
     desc = ft.TextField(label="Description")
+
 
     def save_property(e):
         try:
             price_value = float(price.value)
+
 
             if not title.value or not address.value:
                 output.value = "❌ Title and Address required"
                 page.update()
                 return
 
+
             if not status.value:
                 output.value = "❌ Select a status"
                 page.update()
                 return
+
 
             add_property(
                 title.value,
@@ -58,14 +66,18 @@ def main(page: ft.Page):
                 desc.value
             )
 
+
             output.value = "✅ Property added"
+
 
         except ValueError:
             output.value = "❌ Price must be a number"
         except Exception as err:
             output.value = f"❌ Error: {err}"
 
+
         page.update()
+
 
     def show_properties(e):
         try:
@@ -75,10 +87,12 @@ def main(page: ft.Page):
             output.value = f"❌ Error: {err}"
         page.update()
 
-   
+
+    # -------- CLIENTS --------
     name = ft.TextField(label="Name")
     phone = ft.TextField(label="Phone")
     email = ft.TextField(label="Email")
+
 
     def save_client(e):
         try:
@@ -87,18 +101,23 @@ def main(page: ft.Page):
                 page.update()
                 return
 
+
             if not name.value:
                 output.value = "❌ Name required"
                 page.update()
                 return
 
+
             add_client(name.value, phone.value, email.value)
             output.value = "✅ Client added"
+
 
         except Exception as err:
             output.value = f"❌ Error: {err}"
 
+
         page.update()
+
 
     def show_clients(e):
         try:
@@ -108,11 +127,13 @@ def main(page: ft.Page):
             output.value = f"❌ Error: {err}"
         page.update()
 
-    
+
+    # -------- TRANSACTIONS --------
     property_id = ft.TextField(label="Property ID")
     client_id = ft.TextField(label="Client ID")
     amount = ft.TextField(label="Amount")
     date = ft.TextField(label="Date (YYYY-MM-DD)")
+
 
     transaction_type = ft.Dropdown(
         label="Transaction Type",
@@ -121,6 +142,7 @@ def main(page: ft.Page):
             ft.dropdown.Option("rent")
         ]
     )
+
 
     def save_transaction(e):
         try:
@@ -132,12 +154,16 @@ def main(page: ft.Page):
                 date.value
             )
 
+
             output.value = "✅ Transaction completed"
+
 
         except Exception as err:
             output.value = f"❌ Error: {err}"
 
+
         page.update()
+
 
     def show_transactions(e):
         try:
@@ -147,8 +173,9 @@ def main(page: ft.Page):
             output.value = f"❌ Error: {err}"
         page.update()
 
-    
-    def show_available_report(e):
+
+    # -------- REPORTS --------
+    def show_available(e):
         try:
             props = get_available_properties()
             output.value = f"AVAILABLE PROPERTIES:\n{props}"
@@ -156,9 +183,11 @@ def main(page: ft.Page):
             output.value = f"❌ Error: {err}"
         page.update()
 
+
     def show_dashboard(e):
         try:
             stats = get_dashboard_stats()
+
 
             output.value = (
                 f"📊 DASHBOARD\n"
@@ -168,53 +197,58 @@ def main(page: ft.Page):
                 f"Rented: {stats['rented']}\n"
                 f"Clients: {stats['clients']}"
             )
+
+
         except Exception as err:
             output.value = f"❌ Error: {err}"
 
+
         page.update()
 
-    
-    tabs = ft.Tabs(
-        selected_index=0,
-        tabs=[
-            ft.Tab(
-                text=("Properties"),
-                content=ft.Column([
-                    title, address, ptype, price, status, desc,
-                    ft.ElevatedButton("Add Property", on_click=save_property),
-                    ft.ElevatedButton("Show Properties", on_click=show_properties),
-                ])
-            ),
-            ft.Tab(
-                text=("Clients"),
-                content=ft.Column([
-                    name, phone, email,
-                    ft.ElevatedButton("Add Client", on_click=save_client),
-                    ft.ElevatedButton("Show Clients", on_click=show_clients),
-                ])
-            ),
-            ft.Tab(
-                text=("Transactions"),
-                content=ft.Column([
-                    property_id, client_id, transaction_type, amount, date,
-                    ft.ElevatedButton("Create Transaction", on_click=save_transaction),
-                    ft.ElevatedButton("Show Transactions", on_click=show_transactions),
-                ])
-            ),
-            ft.Tab(
-                text=("Reports"),
-                content=ft.Column([
-                    ft.ElevatedButton("Show Dashboard", on_click=show_dashboard),
-                    ft.ElevatedButton("Available Properties", on_click=show_available_report),
-                ])
-            ),
-        ]
-    )
 
+    # -------- UI --------
     page.add(
         ft.Text("🏠 REAL ESTATE SYSTEM", size=22, weight="bold"),
-        tabs,
+
+
         ft.Divider(),
+
+
+        ft.Text("---- PROPERTIES ----"),
+        title, address, ptype, price, status, desc,
+        ft.ElevatedButton("Add Property", on_click=save_property),
+        ft.ElevatedButton("Show Properties", on_click=show_properties),
+
+
+        ft.Divider(),
+
+
+        ft.Text("---- CLIENTS ----"),
+        name, phone, email,
+        ft.ElevatedButton("Add Client", on_click=save_client),
+        ft.ElevatedButton("Show Clients", on_click=show_clients),
+
+
+        ft.Divider(),
+
+
+        ft.Text("---- TRANSACTIONS ----"),
+        property_id, client_id, transaction_type, amount, date,
+        ft.ElevatedButton("Create Transaction", on_click=save_transaction),
+        ft.ElevatedButton("Show Transactions", on_click=show_transactions),
+
+
+        ft.Divider(),
+
+
+        ft.Text("---- REPORTS ----"),
+        ft.ElevatedButton("Show Dashboard", on_click=show_dashboard),
+        ft.ElevatedButton("Available Properties", on_click=show_available),
+
+
+        ft.Divider(),
+
+
         ft.Text("OUTPUT:"),
         output
     )

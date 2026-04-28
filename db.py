@@ -1,8 +1,13 @@
 import sqlite3
+import os
 
 
 def connect():
-    return sqlite3.connect("real_estate.db")
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    db_path = os.path.join(base_dir, "real_estate.db")
+    print("USANDO DB EN:", db_path)  
+    return sqlite3.connect(db_path)
+
 
 
 

@@ -1,11 +1,12 @@
-
 import sqlite3
+
 
 conn = sqlite3.connect("real_estate.db")
 cursor = conn.cursor()
 
+
 cursor.execute("""
-CREATE TABLE properties (
+CREATE TABLE IF NOT EXISTS properties (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
     address TEXT NOT NULL,
@@ -16,8 +17,9 @@ CREATE TABLE properties (
 )
 """)
 
+
 cursor.execute("""
-CREATE TABLE clients (
+CREATE TABLE IF NOT EXISTS clients (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     full_name TEXT NOT NULL,
     phone TEXT,
@@ -25,8 +27,9 @@ CREATE TABLE clients (
 )
 """)
 
+
 cursor.execute("""
-CREATE TABLE transactions (
+CREATE TABLE IF NOT EXISTS transactions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     property_id INTEGER,
     client_id INTEGER,
@@ -36,7 +39,16 @@ CREATE TABLE transactions (
 )
 """)
 
+
+
+cursor.execute("""
+CREATE VIEW IF NOT EXISTS available_properties AS
+SELECT * FROM properties WHERE status='available'
+""")
+
+
 conn.commit()
 conn.close()
 
-print("DB creada bien xfin")
+
+print("✅ DB creada completa")
