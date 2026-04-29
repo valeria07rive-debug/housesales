@@ -1,6 +1,5 @@
 import sqlite3
 
-
 conn = sqlite3.connect("real_estate.db")
 cursor = conn.cursor()
 
@@ -35,20 +34,19 @@ CREATE TABLE IF NOT EXISTS transactions (
     client_id INTEGER,
     transaction_type TEXT CHECK(transaction_type IN ('sale','rent')),
     amount REAL,
-    transaction_date TEXT
+    transaction_date TEXT,
+    FOREIGN KEY (property_id) REFERENCES properties(id),
+    FOREIGN KEY (client_id) REFERENCES clients(id)
 )
 """)
 
 
-
 cursor.execute("""
 CREATE VIEW IF NOT EXISTS available_properties AS
-SELECT * FROM properties WHERE status='available'
+SELECT * FROM properties WHERE status = 'available'
 """)
-
 
 conn.commit()
 conn.close()
 
-
-print("✅ DB creada completa")
+print("database finalala")
