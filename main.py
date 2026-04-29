@@ -5,220 +5,244 @@ from db import *
 def main(page: ft.Page):
     page.title = "🏠 Real Estate System"
     page.padding = 20
+    page.scroll = ft.ScrollMode.AUTO
 
 
-    output = ft.Text(color="blue")
-    content = ft.Column()
+    output = ft.Text(color="blue", size=14)
 
 
-    # ================= VIEW SWITCH =================
+    content = ft.Column(expand=True, scroll=ft.ScrollMode.AUTO)
+
+
     def change_view(view):
         content.controls.clear()
         content.controls.append(view)
         page.update()
 
 
-    # ================= TABLE =================
-    table = ft.DataTable(columns=[
-        ft.DataColumn(ft.Text("ID")),
-        ft.DataColumn(ft.Text("Info")),
-        ft.DataColumn(ft.Text("Actions")),
-    ])
+    
+    table = ft.DataTable(
+        columns=[
+            ft.DataColumn(ft.Text("ID")),
+            ft.DataColumn(ft.Text("Details")),
+        ],
+        rows=[]
+    )
 
 
     def update_table(data):
-        table.rows = []
+        table.rows.clear()
+
+
         for row in data:
-            pid = row[0]
-
-
             table.rows.append(
                 ft.DataRow(cells=[
-                    ft.DataCell(ft.Text(str(pid))),
-                    ft.DataCell(ft.Text(str(row))),
-                    ft.DataCell(
-                        ft.Row([
-                            ft.IconButton("delete", on_click=lambda e, id=pid: delete_item(id)),
-                            ft.IconButton("edit", on_click=lambda e, id=pid: load_edit(id)),
-                        ])
-                    )
+                    ft.DataCell(ft.Text(str(row[0]))),
+                    ft.DataCell(ft.Text(" | ".join(map(str, row[1:])))),
                 ])
             )
         page.update()
 
 
-    # ================= DELETE =================
-    def delete_item(pid):
-        delete_property(pid)
-        output.value = f"Deleted {pid}"
-        page.update()
-
-
-    # ================= EDIT =================
-    edit_id = ft.TextField(label="ID", disabled=True)
-    edit_title = ft.TextField(label="Title")
-    edit_address = ft.TextField(label="Address")
-    edit_price = ft.TextField(label="Price")
-    edit_status = ft.Dropdown(options=[
-        ft.dropdown.Option("available"),
-        ft.dropdown.Option("sold"),
-        ft.dropdown.Option("rented"),
-        ft.dropdown.Option("reserved"),
-    ])
-
-
-    def load_edit(pid):
-        props = get_properties()
-        for p in props:
-            if p[0] == pid:
-                edit_id.value = str(p[0])
-                edit_title.value = p[1]
-                edit_address.value = p[2]
-                edit_price.value = str(p[4])
-                edit_status.value = p[5]
-        page.update()
-
-
-    def save_edit(e):
-        update_property(
-            int(edit_id.value),
-            edit_title.value,
-            edit_address.value,
-            float(edit_price.value),
-            edit_status.value
-        )
-        output.value = "Updated!"
-        page.update()
-
-
-    edit_section = ft.Column([
-        ft.Text("Edit Property", size=16),
-        edit_id, edit_title, edit_address, edit_price, edit_status,
-        ft.ElevatedButton("Save Changes", on_click=save_edit)
-    ])
-
-
-    # ================= PROPERTIES =================
+    
     title = ft.TextField(label="Title")
     address = ft.TextField(label="Address")
     price = ft.TextField(label="Price")
 
 
-    status = ft.Dropdown(options=[
-        ft.dropdown.Option("available"),
-        ft.dropdown.Option("sold"),
-        ft.dropdown.Option("rented"),
-        ft.dropdown.Option("reserved"),
-    ])
-
-
-    filter_status = ft.Dropdown(
-        label="Filter",
+    status = ft.Dropdown(
+        label="Status",
         options=[
-            ft.dropdown.Option("all"),
             ft.dropdown.Option("available"),
             ft.dropdown.Option("sold"),
             ft.dropdown.Option("rented"),
+            ft.dropdown.Option("reserved"),
         ]
     )
 
 
     def save_property(e):
-        add_property(title.value, address.value, "", float(price.value), status.value, "")
-        output.value = "Added!"
-        page.update()
+        try:
+            if not title.value or not address.value:
+                output.value = "❌ Please fill all required fields"
+                output.update()
+                return
 
 
-    def show_filtered(e):
-        data = get_properties()
-        if filter_status.value and filter_status.value != "all":
-            data = [d for d in data if d[5] == filter_status.value]
-        update_table(data)
+            price_val = float(price.value)
+
+
+            add_property(title.value, address.value, "", price_val, status.value, "")
+            output.value = "✅ Property added successfully"
+            output.update()
+            refresh()
+
+
+        except ValueError:
+            output.value = "❌ Please enter a valid number for price"
+            output.update()
+        except:
+            output.value = "❌ Unexpected error"
+            output.update()
 
 
     def properties_view():
         return ft.Column([
-            ft.Text("Properties", size=20),
+            ft.Text("🏠 Properties", size=22, weight="bold"),
             title, address, price, status,
             ft.Row([
-                ft.ElevatedButton("Add", on_click=save_property),
-                ft.ElevatedButton("Show", on_click=show_filtered),
+                ft.ElevatedButton("Add Property", on_click=save_property),
+                ft.ElevatedButton("Show Properties", on_click=lambda e: update_table(get_properties())),
             ]),
-            filter_status,
-            table,
-            edit_section
+            table
         ])
 
 
-    # ================= CLIENTS =================
+    
     name = ft.TextField(label="Name")
-    phone = ft.TextField(label="Phone")
+    phone = ft.TextField(label="Phone", keyboard_type=ft.KeyboardType.NUMBER)
 
 
     def save_client(e):
+        if not phone.value.isdigit():
+            output.value = "❌ Please enter numbers only for phone"
+            output.update()
+            return
+
+
         add_client(name.value, phone.value, "")
-        output.value = "Client added"
-        page.update()
+        output.value = "✅ Client added successfully"
+        output.update()
+        refresh()
 
 
     def clients_view():
         return ft.Column([
-            ft.Text("Clients", size=20),
+            ft.Text("👤 Clients", size=22, weight="bold"),
             name, phone,
-            ft.ElevatedButton("Add", on_click=save_client),
-            ft.ElevatedButton("Show", on_click=lambda e: update_table(get_clients())),
-            table
-        ])
-
-
-    # ================= TRANSACTIONS =================
-    prop_dd = ft.Dropdown(label="Property")
-    client_dd = ft.Dropdown(label="Client")
-
-
-    def refresh(e=None):
-        prop_dd.options = [ft.dropdown.Option(str(p[0]), p[1]) for p in get_properties()]
-        client_dd.options = [ft.dropdown.Option(str(c[0]), c[1]) for c in get_clients()]
-        page.update()
-
-
-    def save_transaction(e):
-        create_transaction(int(prop_dd.value), int(client_dd.value), "sale", 1000, "2026")
-        output.value = "Transaction done"
-        page.update()
-
-
-    def transactions_view():
-        return ft.Column([
-            ft.Text("Transactions", size=20),
-            prop_dd, client_dd,
             ft.Row([
-                ft.ElevatedButton("Refresh", on_click=refresh),
-                ft.ElevatedButton("Create", on_click=save_transaction),
-                ft.ElevatedButton("Show", on_click=lambda e: update_table(get_transactions())),
+                ft.ElevatedButton("Add Client", on_click=save_client),
+                ft.ElevatedButton("Show Clients", on_click=lambda e: update_table(get_clients())),
             ]),
             table
         ])
 
 
-    # ================= DASHBOARD =================
-    def dashboard_view():
-        return ft.Column([
-            ft.Text("Dashboard", size=20),
-            ft.ElevatedButton("Show Stats", on_click=lambda e: output.__setattr__("value", str(get_dashboard_stats())))
-        ])
+    
+    prop_dd = ft.Dropdown(label="Property")
+    client_dd = ft.Dropdown(label="Client")
+    amount = ft.TextField(label="Amount")
 
 
-    # ================= REPORTS =================
-    def reports_view():
+    t_type = ft.Dropdown(
+        label="Type",
+        options=[
+            ft.dropdown.Option("sale"),
+            ft.dropdown.Option("rent"),
+        ]
+    )
+
+
+    def refresh(e=None):
+        props = get_properties()
+        clients = get_clients()
+
+
+        prop_dd.options = [
+            ft.dropdown.Option(str(p[0]), f"{p[1]} (${p[4]})")
+            for p in props
+        ]
+
+
+        client_dd.options = [
+            ft.dropdown.Option(str(c[0]), c[1])
+            for c in clients
+        ]
+
+
+        output.value = f"🔄 Lists updated ({len(props)} properties, {len(clients)} clients)"
+        output.update()
+
+
+        page.update()
+
+
+    def save_transaction(e):
+        if not prop_dd.value or not client_dd.value:
+            output.value = "❌ Please select property and client"
+            output.update()
+            return
+
+
+        try:
+            amount_val = float(amount.value)
+
+
+            create_transaction(
+                int(prop_dd.value),
+                int(client_dd.value),
+                t_type.value,
+                amount_val,
+                "2026-01-01"
+            )
+
+
+            output.value = "✅ Transaction completed successfully"
+            output.update()
+            refresh()
+
+
+        except ValueError:
+            output.value = "❌ Please enter a valid number for amount"
+            output.update()
+        except Exception as err:
+            output.value = f"❌ {err}"
+            output.update()
+
+
+    def transactions_view():
         return ft.Column([
-            ft.Text("Reports", size=20),
-            ft.ElevatedButton("Available", on_click=lambda e: update_table(get_available_properties())),
+            ft.Text("💰 Transactions", size=22, weight="bold"),
+            prop_dd, client_dd, amount, t_type,
+            ft.Row([
+                ft.ElevatedButton("Refresh Lists", on_click=refresh),
+                ft.ElevatedButton("Create Transaction", on_click=save_transaction),
+                ft.ElevatedButton("Show Transactions", on_click=lambda e: update_table(get_transactions())),
+            ]),
             table
         ])
 
 
-    # ================= MENU =================
+    
+    def dashboard_view():
+        def show(e):
+            stats = get_dashboard_stats()
+            output.value = (
+                f"Total: {stats['total_properties']} | "
+                f"Available: {stats['available']} | "
+                f"Sold: {stats['sold']} | "
+                f"Rented: {stats['rented']} | "
+                f"Clients: {stats['clients']}"
+            )
+            output.update()
+
+
+        return ft.Column([
+            ft.Text("📊 Dashboard", size=22, weight="bold"),
+            ft.ElevatedButton("Show Statistics", on_click=show)
+        ])
+
+
+    
+    def reports_view():
+        return ft.Column([
+            ft.Text("📄 Reports", size=22, weight="bold"),
+            ft.ElevatedButton("Show Available Properties", on_click=lambda e: update_table(get_available_properties())),
+            table
+        ])
+
+
+    
     menu = ft.Row([
         ft.ElevatedButton("Dashboard", on_click=lambda e: change_view(dashboard_view())),
         ft.ElevatedButton("Properties", on_click=lambda e: change_view(properties_view())),
@@ -229,11 +253,12 @@ def main(page: ft.Page):
 
 
     page.add(
-        ft.Text("🏠 Real Estate System", size=26),
+        ft.Text("🏠 Real Estate System", size=28, weight="bold"),
         menu,
         ft.Divider(),
         content,
         ft.Divider(),
+        ft.Text("System Messages:", weight="bold"),
         output
     )
 
